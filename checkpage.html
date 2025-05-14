@@ -1,93 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dreamy Soaps - Checkout</title>
   <style>
-    body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background: #fff8f0; }
-    header { background: #ffb6b9; padding: 20px; text-align: center; }
-    header h1 { margin: 0; color: white; font-size: 2.5em; }
-    .checkout-summary { padding: 30px; background: #ffeaea; margin: 30px; border-radius: 10px; }
-    .checkout-summary h2 { font-size: 2em; color: #ff6f91; }
-    .cart-item { font-size: 1.2em; margin: 10px 0; }
-    .cart-item span { font-weight: bold; }
-    .total { font-size: 1.5em; color: #ff6f91; }
-    .paypal-button-container { margin-top: 30px; }
-    footer { text-align: center; padding: 20px; background: #ffb6b9; color: white; }
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #fff8f0;
+    }
+    header {
+      background: #ffb6b9;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      color: white;
+      font-size: 2.5em;
+    }
+    .checkout-summary {
+      padding: 30px;
+      background: #ffeaea;
+      margin: 30px;
+      border-radius: 10px;
+    }
+    .checkout-summary h2 {
+      font-size: 2em;
+      color: #ff6f91;
+    }
+    .cart-item {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+    .cart-item span {
+      font-weight: bold;
+    }
+    .total {
+      font-size: 1.5em;
+      color: #ff6f91;
+      margin-top: 20px;
+    }
+    .paypal-button-container {
+      margin-top: 30px;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #ffb6b9;
+      color: white;
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Dreamy Soaps - Checkout</h1>
-</header>
+  <header>
+    <h1>Dreamy Soaps - Checkout</h1>
+  </header>
 
-<section class="checkout-summary">
-  <h2>Order Summary</h2>
-  <div id="cartDetails"></div>
-  <div class="total">
-    Total: <span id="totalLKR"></span> LKR (<span id="totalUSD"></span> USD)
-  </div>
+  <section class="checkout-summary">
+    <h2>Order Summary</h2>
+    <div id="cartDetails"></div>
+    <div class="total">
+      Total: <span id="totalLKR">0</span> LKR (<span id="totalUSD">0.00</span> USD)
+    </div>
 
-  <!-- PayPal button container -->
-  <div id="paypal-button-container"></div>
-</section>
+    <!-- PayPal Hosted Button -->
+    <div id="paypal-container-FWN8DF7PNG54L" class="paypal-button-container"></div>
+  </section>
 
-<footer>
-  <p>&copy; 2025 Dreamy Soaps. All Rights Reserved.</p>
-</footer>
+  <footer>
+    <p>&copy; 2025 Dreamy Soaps. All Rights Reserved.</p>
+  </footer>
 
-<!-- PayPal SDK script -->
-<script src="https://www.paypal.com/sdk/js?client-id=BAA4Z6-gjP00Yz-UD0HA_ApZdxyzADtdTx9gVYL1JI6vyzCrHIRNui1WLGwCoHTRgV-WIVXZHZyrFC1AVY&currency=USD"></script>
-<script>
-  // Sample cart data (replace this with your actual cart data)
-  const cart = [
-    { name: "Blue fresher", price: 1000, quantity: 2 },
-    { name: "CinnaBar", price: 1000, quantity: 1 }
-  ];
+  <!-- PayPal Hosted Button SDK -->
+  <script src="https://www.paypal.com/bizcomponents/button.js" async defer></script>
 
-  // Function to convert LKR to USD (for simplicity, assume 1 USD = 300 LKR)
-  function convertLKRtoUSD(lkr) {
-    return (lkr / 300).toFixed(2); // Assuming 1 USD = 300 LKR
-  }
+  <script>
+    // Get cart from localStorage
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-  // Calculate total price in LKR and USD
-  const totalLKR = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  const totalUSD = convertLKRtoUSD(totalLKR);
+    // Function to convert LKR to USD (example rate: 1 USD = 300 LKR)
+    function convertLKRtoUSD(lkr) {
+      return (lkr / 300).toFixed(2);
+    }
 
-  // Display cart details
-  const cartDetails = document.getElementById('cartDetails');
-  cartDetails.innerHTML = cart.map(item => {
-    return `<div class="cart-item">${item.name} - ${item.price} LKR x ${item.quantity}</div>`;
-  }).join('');
+    // Calculate totals
+    let totalLKR = 0;
+    cart.forEach(item => {
+      totalLKR += item.price * item.quantity;
+    });
+    const totalUSD = convertLKRtoUSD(totalLKR);
 
-  // Display total prices
-  document.getElementById('totalLKR').innerText = totalLKR;
-  document.getElementById('totalUSD').innerText = totalUSD;
+    // Display cart items
+    const cartDetails = document.getElementById('cartDetails');
+    cartDetails.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        ${item.name} - ${item.price} LKR × ${item.quantity}
+      </div>
+    `).join('');
 
-  // PayPal button integration
-  if (window.paypal) {
-    paypal.Buttons({
-      createOrder: function(data, actions) {
-        return actions.order.create({
-          purchase_units: [{
-            amount: {
-              value: totalUSD // Pass the USD amount
-            }
-          }]
-        });
-      },
-      onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-          alert('Transaction completed by ' + details.payer.name.given_name);
-        });
+    // Display totals
+    document.getElementById('totalLKR').textContent = totalLKR;
+    document.getElementById('totalUSD').textContent = totalUSD;
+
+    // Render PayPal Hosted Button
+    window.addEventListener('load', () => {
+      if (window.paypal && paypal.HostedButtons) {
+        paypal.HostedButtons({
+          hostedButtonId: "FWN8DF7PNG54L",
+        }).render("#paypal-container-FWN8DF7PNG54L");
+      } else {
+        console.error("PayPal Hosted Buttons SDK not loaded.");
       }
-    }).render('#paypal-button-container'); // Render the PayPal button inside the container
-  } else {
-    console.error('PayPal script not loaded correctly. Please check the client ID and internet connection.');
-  }
-</script>
+    });
+  </script>
 
 </body>
 </html>
