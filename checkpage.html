@@ -35,11 +35,8 @@
 </footer>
 
 <script>
-  // Sample cart data (replace this with your actual cart data)
-  const cart = [
-    { name: "Blue fresher", price: 1000, quantity: 2 },
-    { name: "CinnaBar", price: 1000, quantity: 1 }
-  ];
+  // Retrieve cart data from localStorage (passed from the main shopping page)
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
   // Function to convert LKR to USD (for simplicity, assume 1 USD = 300 LKR)
   function convertLKRtoUSD(lkr) {
