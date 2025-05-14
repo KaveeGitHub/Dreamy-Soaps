@@ -2,112 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Checkout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dreamy Soaps Checkout</title>
+  <script src="https://www.paypal.com/sdk/js?client-id=BAA4Z6-gjP00Yz-UD0HA_ApZdxyzADtdTx9gVYL1JI6vyzCrHIRNui1WLGwCoHTRgV-WIVXZHZyrFC1AVY&currency=USD"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f9f9f9;
-    }
-    h2 {
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      margin-top: 2rem;
-      padding: 0.75rem 1.5rem;
-      background-color: #0070ba;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #003087;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #fff8f0; }
+    h1 { color: #ff6f91; }
+    .cart-summary { margin-bottom: 30px; }
+    .cart-item { margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
-  <h2>Shipping Information</h2>
-  <form id="checkoutForm" onsubmit="event.preventDefault(); saveOrderToFile();">
-    <label for="shippingName">Full Name</label>
-    <input type="text" id="shippingName" required />
+<h1>Checkout</h1>
+<div class="cart-summary" id="cartSummary"></div>
+<div id="paypal-button-container"></div>
 
-    <label for="shippingAddress">Address</label>
-    <textarea id="shippingAddress" rows="3" required></textarea>
+<script>
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    <label for="shippingPhone">Phone Number</label>
-    <input type="tel" id="shippingPhone" required />
-
-    <button type="submit">Complete Purchase</button>
-  </form>
-
-  <script>
-    // Example product array
-    const products = [
-      { name: "Product 1", price: 25.00, quantity: 1 },
-      { name: "Product 2", price: 15.00, quantity: 2 }
-    ];
-
-    function saveOrderToFile() {
-      const name = document.getElementById("shippingName").value.trim();
-      const address = document.getElementById("shippingAddress").value.trim();
-      const phone = document.getElementById("shippingPhone").value.trim();
-
-      if (!name || !address || !phone) {
-        alert("Please fill out all shipping details.");
-        return;
-      }
-
-      if (products.length === 0) {
-        alert("Your cart is empty.");
-        return;
-      }
-
-      const productList = products.map(
-        item => `${item.name} - ${item.quantity} x ${item.price} LKR`
-      ).join('\n');
-
-      const total = products.reduce(
-        (sum, item) => sum + item.quantity * item.price,
-        0
-      );
-
-      // Prepare order data
-      const orderData = `
-        Customer Name: ${name}
-        Customer Address: ${address}
-        Customer Phone: ${phone}
-        
-        Products:
-        ${productList}
-        
-        Total: ${total} LKR
-      `;
-
-      // Create a Blob with the order data and trigger a download
-      const blob = new Blob([orderData], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'order_details.txt'; // Name of the file
-      link.click();
-
-      alert("Order saved as a file!");
+  function displayCart() {
+    const summary = document.getElementById('cartSummary');
+    if (cart.length === 0) {
+      summary.innerHTML = '<p>Your cart is empty.</p>';
+      return;
     }
-  </script>
+    let total = 0;
+    summary.innerHTML = cart.map(item => {
+      total += item.price * item.quantity;
+      return `<div class="cart-item">${item.name} x ${item.quantity} - ${item.price * item.quantity} LKR</div>`;
+    }).join('');
+    summary.innerHTML += `<p><strong>Total: ${total} LKR</strong></p>`;
+  }
+
+  displayCart();
+
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      let total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: (total / 320).toFixed(2) // Assuming 1 USD = 320 LKR
+          },
+          description: cart.map(item => `${item.name} x${item.quantity}`).join(', ')
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        alert('Transaction completed by ' + details.payer.name.given_name);
+        localStorage.removeItem('cart');
+        window.location.href = 'thankyou.html';
+      });
+    }
+  }).render('#paypal-button-container');
+</script>
 
 </body>
 </html>
