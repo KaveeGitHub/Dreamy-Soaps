@@ -35,27 +35,32 @@
 </footer>
 
 <script>
-  // Retrieve cart data from localStorage (passed from the main shopping page)
+  // Retrieve cart data from localStorage (this will get the actual cart data saved earlier)
   const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-  // Function to convert LKR to USD (for simplicity, assume 1 USD = 300 LKR)
-  function convertLKRtoUSD(lkr) {
-    return (lkr / 300).toFixed(2); // Assuming 1 USD = 300 LKR
+  // If the cart is empty, display a message
+  if (cart.length === 0) {
+    document.getElementById('cartDetails').innerHTML = '<p>Your cart is empty!</p>';
+  } else {
+    // Function to convert LKR to USD (for simplicity, assume 1 USD = 300 LKR)
+    function convertLKRtoUSD(lkr) {
+      return (lkr / 300).toFixed(2); // Assuming 1 USD = 300 LKR
+    }
+
+    // Calculate total price in LKR and USD
+    const totalLKR = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    const totalUSD = convertLKRtoUSD(totalLKR);
+
+    // Display cart details
+    const cartDetails = document.getElementById('cartDetails');
+    cartDetails.innerHTML = cart.map(item => {
+      return `<div class="cart-item">${item.name} - ${item.price} LKR x ${item.quantity}</div>`;
+    }).join('');
+
+    // Display total prices
+    document.getElementById('totalLKR').innerText = totalLKR;
+    document.getElementById('totalUSD').innerText = totalUSD;
   }
-
-  // Calculate total price in LKR and USD
-  const totalLKR = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  const totalUSD = convertLKRtoUSD(totalLKR);
-
-  // Display cart details
-  const cartDetails = document.getElementById('cartDetails');
-  cartDetails.innerHTML = cart.map(item => {
-    return `<div class="cart-item">${item.name} - ${item.price} LKR x ${item.quantity}</div>`;
-  }).join('');
-
-  // Display total prices
-  document.getElementById('totalLKR').innerText = totalLKR;
-  document.getElementById('totalUSD').innerText = totalUSD;
 </script>
 
 </body>
