@@ -2,93 +2,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Checkout Page</title>
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <title>Checkout</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    input, button { padding: 10px; margin: 5px; }
-    .paypal-button { background-color: #FFD140; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f9f9f9;
+    }
+    h2 {
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #0070ba;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003087;
+    }
   </style>
 </head>
 <body>
-  <h1>Checkout</h1>
 
-  <h2>Shipping Details</h2>
-  <input id="shippingName" type="text" placeholder="Full Name"><br>
-  <input id="shippingAddress" type="text" placeholder="Shipping Address"><br>
-  <input id="shippingPhone" type="text" placeholder="Phone Number"><br>
+  <h2>Shipping Information</h2>
+  <form id="checkoutForm" onsubmit="event.preventDefault(); completePurchase();">
+    <label for="shippingName">Full Name</label>
+    <input type="text" id="shippingName" required />
 
-  <h2>Cart Summary</h2>
-  <div id="cartItems"></div>
-  <h3>Total: <span id="totalPrice">0</span> LKR</h3>
+    <label for="shippingAddress">Address</label>
+    <textarea id="shippingAddress" rows="3" required></textarea>
 
-  <button onclick="completePurchase()">Place Order</button>
+    <label for="shippingPhone">Phone Number</label>
+    <input type="tel" id="shippingPhone" required />
 
-  <form action="https://www.paypal.com/ncp/payment/CXY27CU5SZ988" method="post" target="_blank">
-    <input class="paypal-button" type="submit" value="Pay with PayPal" />
-    <img src="https://www.paypalobjects.com/images/Debit_Credit.svg" alt="cards" height="20">
+    <button type="submit">Complete Purchase</button>
   </form>
 
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
-    emailjs.init('tldy827nNeolKsVgO'); // Your EmailJS user ID
-
-    function loadCart() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const cartContainer = document.getElementById('cartItems');
-      let total = 0;
-      cartContainer.innerHTML = '';
-      cart.forEach(item => {
-        const line = document.createElement('div');
-        line.textContent = `${item.name} - ${item.quantity} x ${item.price} LKR`;
-        cartContainer.appendChild(line);
-        total += item.quantity * item.price;
-      });
-      document.getElementById('totalPrice').innerText = total;
-    }
-
-    function sendOrderEmail(cart, shippingDetails, totalPrice) {
-      const productList = cart.map(item =>
-        `${item.name} - ${item.quantity} x ${item.price} LKR`
-      ).join('\n');
-
-      const templateParams = {
-        name: shippingDetails.name,
-        address: shippingDetails.address,
-        phone: shippingDetails.phone,
-        products: productList,
-        total: totalPrice + ' LKR'
-      };
-
-      emailjs.send('service_vwz25ea', 'template_bd4d37e', templateParams)
-        .then(response => {
-          console.log('SUCCESS!', response.status, response.text);
-        }, error => {
-          console.log('FAILED...', error);
-        });
-    }
+    // Initialize EmailJS
+    emailjs.init("tldy827nNeolKsVgO"); // Your User ID
 
     function completePurchase() {
-      const name = document.getElementById('shippingName').value;
-      const address = document.getElementById('shippingAddress').value;
-      const phone = document.getElementById('shippingPhone').value;
+      const name = document.getElementById("shippingName").value.trim();
+      const address = document.getElementById("shippingAddress").value.trim();
+      const phone = document.getElementById("shippingPhone").value.trim();
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
       if (!name || !address || !phone) {
-        alert('Please fill in all shipping details.');
+        alert("Please fill out all shipping details.");
         return;
       }
 
-      const shippingDetails = { name, address, phone };
-      const totalPrice = document.getElementById('totalPrice').innerText;
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        alert("Your cart is empty.");
+        return;
+      }
 
-      sendOrderEmail(cart, shippingDetails, totalPrice);
+      const productList = cart.map(
+        item => `${item.name} - ${item.quantity} x ${item.price} LKR`
+      ).join('\n');
 
-      localStorage.removeItem('cart');
-      alert('Order placed! You will receive an email confirmation.');
-      window.location.href = 'thankyou.html';
+      const total = cart.reduce(
+        (sum, item) => sum + item.quantity * item.price,
+        0
+      );
+
+      // Send email with order info
+      emailjs.send("service_vwz25ea", "template_bd4d37e", {
+        customer_name: name,
+        customer_address: address,
+        customer_phone: phone,
+        products: productList,
+        total: total
+      })
+      .then(() => {
+        alert("Order sent! Redirecting to PayPal...");
+        // Redirect to PayPal hosted payment link
+        window.location.href = "https://www.paypal.com/ncp/payment/CXY27CU5SZ988";
+      })
+      .catch(error => {
+        alert("Failed to send order. Please try again.\n" + JSON.stringify(error));
+        console.error(error);
+      });
     }
-
-    loadCart();
   </script>
+
 </body>
 </html>
