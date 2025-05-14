@@ -59,7 +59,7 @@
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
     // Initialize EmailJS
-    emailjs.init("tldy827nNeolKsVgO"); // Your actual User ID here
+    emailjs.init("tldy827nNeolKsVgO"); // Use your actual User ID here
 
     // Example product array
     const products = [
@@ -72,6 +72,11 @@
       const address = document.getElementById("shippingAddress").value.trim();
       const phone = document.getElementById("shippingPhone").value.trim();
 
+      console.log("Name:", name);
+      console.log("Address:", address);
+      console.log("Phone:", phone);
+
+      // Validation for missing details
       if (!name || !address || !phone) {
         alert("Please fill out all shipping details.");
         return;
@@ -91,6 +96,9 @@
         0
       );
 
+      console.log("Product List:", productList);
+      console.log("Total:", total);
+
       // Send email with order info
       emailjs.send("service_vwz25ea", "template_bd4d37e", {
         customer_name: name,
@@ -99,7 +107,8 @@
         products: productList,
         total: total
       })
-      .then(() => {
+      .then((response) => {
+        console.log("Email sent successfully:", response);
         alert("Order sent! Redirecting to PayPal...");
         
         // Create a PayPal payment link dynamically (adjust with your total or cart details)
@@ -108,9 +117,9 @@
         // Redirect to PayPal
         window.location.href = paypalLink;
       })
-      .catch(error => {
-        alert("Failed to send order. Please try again.\n" + JSON.stringify(error));
-        console.error(error);
+      .catch((error) => {
+        console.error("Error sending email:", error);
+        alert("Failed to send order. Please try again.");
       });
     }
   </script>
