@@ -60,27 +60,32 @@
     // Initialize EmailJS
     emailjs.init("tldy827nNeolKsVgO"); // Your User ID
 
+    // Example product array
+    const products = [
+      { name: "Product 1", price: 25.00, quantity: 1 },
+      { name: "Product 2", price: 15.00, quantity: 2 }
+    ];
+
     function completePurchase() {
       const name = document.getElementById("shippingName").value.trim();
       const address = document.getElementById("shippingAddress").value.trim();
       const phone = document.getElementById("shippingPhone").value.trim();
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
       if (!name || !address || !phone) {
         alert("Please fill out all shipping details.");
         return;
       }
 
-      if (cart.length === 0) {
+      if (products.length === 0) {
         alert("Your cart is empty.");
         return;
       }
 
-      const productList = cart.map(
+      const productList = products.map(
         item => `${item.name} - ${item.quantity} x ${item.price} LKR`
       ).join('\n');
 
-      const total = cart.reduce(
+      const total = products.reduce(
         (sum, item) => sum + item.quantity * item.price,
         0
       );
@@ -95,8 +100,12 @@
       })
       .then(() => {
         alert("Order sent! Redirecting to PayPal...");
-        // Redirect to PayPal hosted payment link
-        window.location.href = "https://www.paypal.com/ncp/payment/CXY27CU5SZ988";
+        
+        // Create a PayPal payment link dynamically (adjust with your total or cart details)
+        const paypalLink = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=your-paypal-email@example.com&amount=${total}&item_name=Your%20Order&currency_code=USD&button_subtype=services&tax_rate=0.0000&shipping=0.00&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted`;
+        
+        // Redirect to PayPal
+        window.location.href = paypalLink;
       })
       .catch(error => {
         alert("Failed to send order. Please try again.\n" + JSON.stringify(error));
