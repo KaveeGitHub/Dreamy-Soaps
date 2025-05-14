@@ -42,7 +42,7 @@
 <body>
 
   <h2>Shipping Information</h2>
-  <form id="checkoutForm" onsubmit="event.preventDefault(); completePurchase();">
+  <form id="checkoutForm" onsubmit="event.preventDefault(); saveOrderToFile();">
     <label for="shippingName">Full Name</label>
     <input type="text" id="shippingName" required />
 
@@ -55,28 +55,18 @@
     <button type="submit">Complete Purchase</button>
   </form>
 
-  <!-- Correct EmailJS SDK -->
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
-    // Initialize EmailJS
-    emailjs.init("tldy827nNeolKsVgO"); // Use your actual User ID here
-
     // Example product array
     const products = [
       { name: "Product 1", price: 25.00, quantity: 1 },
       { name: "Product 2", price: 15.00, quantity: 2 }
     ];
 
-    function completePurchase() {
+    function saveOrderToFile() {
       const name = document.getElementById("shippingName").value.trim();
       const address = document.getElementById("shippingAddress").value.trim();
       const phone = document.getElementById("shippingPhone").value.trim();
 
-      console.log("Name:", name);
-      console.log("Address:", address);
-      console.log("Phone:", phone);
-
-      // Validation for missing details
       if (!name || !address || !phone) {
         alert("Please fill out all shipping details.");
         return;
@@ -96,31 +86,26 @@
         0
       );
 
-      console.log("Product List:", productList);
-      console.log("Total:", total);
+      // Prepare order data
+      const orderData = `
+        Customer Name: ${name}
+        Customer Address: ${address}
+        Customer Phone: ${phone}
+        
+        Products:
+        ${productList}
+        
+        Total: ${total} LKR
+      `;
 
-      // Send email with order info
-      emailjs.send("service_vwz25ea", "template_bd4d37e", {
-        customer_name: name,
-        customer_address: address,
-        customer_phone: phone,
-        products: productList,
-        total: total
-      })
-      .then((response) => {
-        console.log("Email sent successfully:", response);
-        alert("Order sent! Redirecting to PayPal...");
-        
-        // Create a PayPal payment link dynamically (adjust with your total or cart details)
-        const paypalLink = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=phantomattacker2024@gmail.com&amount=${total}&item_name=Your%20Order&currency_code=USD&button_subtype=services&tax_rate=0.0000&shipping=0.00&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted`;
-        
-        // Redirect to PayPal
-        window.location.href = paypalLink;
-      })
-      .catch((error) => {
-        console.error("Error sending email:", error);
-        alert("Failed to send order. Please try again.");
-      });
+      // Create a Blob with the order data and trigger a download
+      const blob = new Blob([orderData], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'order_details.txt'; // Name of the file
+      link.click();
+
+      alert("Order saved as a file!");
     }
   </script>
 
