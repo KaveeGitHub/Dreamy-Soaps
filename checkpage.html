@@ -28,19 +28,11 @@
   <div class="total">
     Total: <span id="totalLKR"></span> LKR (<span id="totalUSD"></span> USD)
   </div>
-
-  <!-- PayPal button container -->
-  <div id="paypal-container-FWN8DF7PNG54L"></div>
 </section>
 
 <footer>
   <p>&copy; 2025 Dreamy Soaps. All Rights Reserved.</p>
 </footer>
-
-<!-- PayPal SDK script (Part 1) -->
-<script 
-  src="https://www.paypal.com/sdk/js?client-id=BAA4Z6-gjP00Yz-UD0HA_ApZdxyzADtdTx9gVYL1JI6vyzCrHIRNui1WLGwCoHTRgV-WIVXZHZyrFC1AVY&components=hosted-buttons&disable-funding=venmo&currency=USD">
-</script>
 
 <script>
   // Sample cart data (replace this with your actual cart data)
@@ -67,11 +59,6 @@
   // Display total prices
   document.getElementById('totalLKR').innerText = totalLKR;
   document.getElementById('totalUSD').innerText = totalUSD;
-
-  // PayPal Hosted Button (Part 2)
-  paypal.HostedButtons({
-    hostedButtonId: "FWN8DF7PNG54L",
-  }).render("#paypal-container-FWN8DF7PNG54L");
 </script>
 
 </body>
