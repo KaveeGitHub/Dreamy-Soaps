@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script 
+  src="https://www.paypal.com/sdk/js?client-id=BAA4Z6-gjP00Yz-UD0HA_ApZdxyzADtdTx9gVYL1JI6vyzCrHIRNui1WLGwCoHTRgV-WIVXZHZyrFC1AVY&components=hosted-buttons&disable-funding=venmo&currency=USD">
+</script>
+
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dreamy Soaps - Checkout</title>
@@ -29,7 +34,14 @@
     Total: <span id="totalLKR"></span> LKR (<span id="totalUSD"></span> USD)
   </div>
 </section>
-
+  
+<div id="paypal-container-FWN8DF7PNG54L"></div>
+<script>
+  paypal.HostedButtons({
+    hostedButtonId: "FWN8DF7PNG54L",
+  }).render("#paypal-container-FWN8DF7PNG54L")
+</script>
+  
 <footer>
   <p>&copy; 2025 Dreamy Soaps. All Rights Reserved.</p>
 </footer>
