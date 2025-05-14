@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dreamy Soaps - Checkout</title>
+  <style>
+    body { font-family: 'Arial', sans-serif; background: #fff8f0; }
+    header { background: #ffb6b9; padding: 20px; text-align: center; }
+    header h1 { color: white; font-size: 2.5em; }
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1.5em;
+      color: #ff6f91;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .cart-summary { padding: 30px; background: #ffe0e0; }
+    .cart-summary h3 { font-size: 2em; color: #ff6f91; }
+    .summary-item { margin: 15px 0; font-size: 1.5em; }
+    .checkout-btn { background: #ff6f91; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 1.3em; width: 100%; }
+    .checkout-btn:hover { background: #ff3b60; }
+    footer { text-align: center; padding: 20px; background: #ffb6b9; color: white; }
+
+    .shipping-form input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1.1em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Dreamy Soaps - Checkout</h1>
+  <div class="back-button" onclick="window.location.href='index.html'">← Back to Shop</div>
+</header>
+
+<section class="cart-summary">
+  <h3>Your Order Summary</h3>
+
+  <div id="orderSummary">
+    <p>No items in your cart</p>
+  </div>
+
+  <div>
+    <p class="summary-item">Total Items: <span id="totalItems">0</span></p>
+    <p class="summary-item">Total Price: <span id="totalPrice">0</span> LKR</p>
+  </div>
+
+  <!-- Shipping Information Form -->
+  <div class="shipping-form">
+    <h4>Shipping Details</h4>
+    <h5>bank Details:<br>#bankNumber-077376738279<br> #bank-Commercial Bank <br>#branch-Piliyandala</h5>
+
+    <input type="text" id="shippingName" placeholder="Full Name" required>
+    <input type="text" id="shippingAddress" placeholder="Shipping Address" required>
+    <input type="text" id="shippingPhone" placeholder="Phone Number" required>
+  </div>
+
+  <!-- PayPal button container -->
+  <div id="paypal-button-container"></div>
+
+  <button class="checkout-btn" onclick="completePurchase()">Complete Purchase</button>
+</section>
+
+<footer>
+  <p>&copy; 2025 Dreamy Soaps. All Rights Reserved.</p>
+</footer>
+
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID"></script>
+
+<script>
+// Initialize cart from localStorage or an empty array if none exists
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+// Function to update checkout summary
+function updateCheckoutSummary() {
+  const totalItems = document.getElementById('totalItems');
+  const totalPrice = document.getElementById('totalPrice');
+  const orderSummary = document.getElementById('orderSummary');
+
+  if (cart.length === 0) {
+    orderSummary.innerHTML = '<p>No items in your cart</p>';
+    totalItems.innerText = '0';
+    totalPrice.innerText = '0';
+  } else {
+    orderSummary.innerHTML = cart.map(item => {
+      return `<p>${item.name} - ${item.quantity} x ${item.price} LKR</p>`;
+    }).join('');
+
+    const totalItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+    const totalCartPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+    totalItems.innerText = totalItemsCount;
+    totalPrice.innerText = totalCartPrice;
+  }
+}
+
+// Call updateCheckoutSummary when the page loads
+updateCheckoutSummary();
+
+// Save shipping details to localStorage
+function saveShippingDetails() {
+  const shippingName = document.getElementById('shippingName').value;
+  const shippingAddress = document.getElementById('shippingAddress').value;
+  const shippingPhone = document.getElementById('shippingPhone').value;
+
+  if (shippingName && shippingAddress && shippingPhone) {
+    localStorage.setItem('shippingDetails', JSON.stringify({
+      name: shippingName,
+      address: shippingAddress,
+      phone: shippingPhone
+    }));
+  } else {
+    alert("Please complete all shipping details.");
+    return false;
+  }
+  return true;
+}
+
+// PayPal integration
+paypal.Buttons({
+  createOrder: function(data, actions) {
+    return actions.order.create({
+      purchase_units: [{
+        amount: {
+          value: document.getElementById('totalPrice').innerText // Get the total price dynamically
+        }
+      }]
+    });
+  },
+  onApprove: function(data, actions) {
+    return actions.order.capture().then(function(details) {
+      alert('Thank you for your purchase, ' + details.payer.name.given_name);
+
+      // Clear cart and shipping details after payment
+      localStorage.removeItem('cart');
+      localStorage.removeItem('shippingDetails');
+
+      // Redirect to a "Thank You" page
+      window.location.href = 'thankyou.html'; // Make sure you have a thank you page
+    });
+  }
+}).render('#paypal-button-container');
+
+// Function to complete purchase manually (if needed)
+function completePurchase() {
+  if (saveShippingDetails()) {
+    alert('Proceeding to Payment');
+    // In real-world scenarios, you would trigger the payment flow here.
+    window.location.href = 'thankyou.html'; // Redirect to thank you page after purchase
+  }
+}
+</script>
+
+</body>
+</html>
